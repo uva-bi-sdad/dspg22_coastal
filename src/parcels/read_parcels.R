@@ -8,16 +8,8 @@ library(data.table)
 
 path <- "~/../../../../project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/"
 
-VAparcels <- st_read(paste0(path,"parceldata/Virginia_Parcels_(Feature_Service)"))
-
-# subset to Accomack + Northampton counties
-VAcounties <- counties(state="VA")
-ESVAcounties <- VAcounties %>% dplyr::filter(NAME %in% c("Accomack","Northampton"))
-
-VAparcels <- st_transform(VAparcels,crs=st_crs(ESVAcounties))
-parcel_intersect <- st_intersects(VAparcels,ESVAcounties)
-# then filter to parcels that intersect
-# ESVAparcels <- ....
+# read in VA parcels subset to Accomack + Northampton counties
+ESVAparcels <- readRDS(paste0(path,"ESVAparcels.RDS"))
 
 # -------------------------------------------------------
 
@@ -35,7 +27,6 @@ coords_BK <- st_as_sf( data.frame(latitude=BKnorthampton$property_address_latiti
 )
 coords_BK <- st_transform(coords_CL, st_crs(ESVAparcels))
 
-# get parcel ID (pid) of intersection between ESVAparcels and housing data using st_intersects()
-
+# get parcel ID (pid) of intersection between ESVAparcels and housing data using st_intersects(coords_BK, ESVAparcels)
 # repeat for Accomack county
 
