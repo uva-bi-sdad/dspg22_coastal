@@ -52,8 +52,6 @@ library(RColorBrewer)
 
 ################################## SEE WHAT CROPS I WILL USE##############################
 data("linkdata")
-
-
 cropvalue<- c(1,2,3,4,5,6,10,11,12,13,14,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,
                  38,39,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,63,64,65,66,67,68,69,
                  70,71,72,74,75,76,77,81,82,83,87,88,92,111,112,121,122,123,124,131,141,142,143,152,176,190,195,204,205,206,
@@ -63,14 +61,6 @@ cropvalue<- c(1,2,3,4,5,6,10,11,12,13,14,21,22,23,24,25,26,27,28,29,30,31,32,33,
 #read in for parcel data
 Parcels_Accomack <- readRDS("/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/parceldata/Parcels_Accomack.RDS")
 Parcels_Northampton <- readRDS("/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/parceldata/Parcels_Northampton.RDS")
-
-#larger for loop idea
-Locality<- c("Northampton County", "Accomack County")
-
-#############################################
-#change locality to county before adding to set
-
-
 
 #################################### FUCTION #############################################
 
@@ -127,7 +117,7 @@ CDL_Crop_Parcel(year=2021, value="allcropvalue", county=51131, parcel = Parcels_
 
 
 
-##################################################
+################################################## experimental function #########################################
 CDL_Crop_Parcel_trial<- function(year, value, county, parcel){
   library(CropScapeR)
   for (i in both){
@@ -176,7 +166,6 @@ CDL_Crop_Parcel_trial<- function(year, value, county, parcel){
   }
   }
 }
-both<- c(51131, 51001)
 
 CDL_Crop_Parcel_trial(year=2021, value="cropvalue", county="both", parcel = Parcels_Northampton)
  
