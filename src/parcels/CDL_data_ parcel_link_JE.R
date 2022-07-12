@@ -61,10 +61,12 @@ ggplot() +
 (
   cdl_VA_2 <- GetCDLData(
     aoi = VA_2_county, 
-    year = "2021", 
-    type = "b" 
+    year = "2020", 
+    type = "f",
+    format = "sf"
   )
 )
+
 
 ggplot() +
   geom_sf(data = IL_county) +
