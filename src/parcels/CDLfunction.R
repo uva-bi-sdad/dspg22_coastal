@@ -13,7 +13,7 @@ library(ggrepel)
 library(tmaptools)
 library(tigris)
 library(viridis)
-library(RColorBrewer)  
+library(RColorBrewer)
 
 #the steps that I did to do this with corn for one year
 
@@ -26,7 +26,7 @@ library(RColorBrewer)
   #df[!(df$value == "0"), ]
 #3: create 30m x 30m tiles for CDL
   #st_buffer(df, dist = 15, endCapStyle = "SQUARE")
-#4: link crop to value 
+#4: link crop to value
   #data("linkdata")
   #df <- dplyr::left_join(df, linkdata, by = c('value' = 'MasterCat'))
 #5: transform CDL crs to Parcel crs
@@ -57,11 +57,12 @@ sort( table(cdl_sf_Northampton$value) )
 ################################## SEE WHAT CROPS I WILL USE##############################
 data("linkdata")
 
-####allcropvalue<- c(1,2,3,4,5,6,10,11,12,13,14,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,
-               ##  38,39,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,63,64,65,66,67,68,69,
-              ##   70,71,72,74,75,76,77,81,82,83,87,88,92,111,112,121,122,123,124,131,141,142,143,152,176,190,195,204,205,206,
-                ## 207,208,209,210,211,212,213,214,216,217,218,219,220,221,222,223,224,225,226,227,229,230,231,232,233,234,235,236,237,
-              ##   238,239,240,241,242,243,244,245,246,2247,248,249,250,254)
+allcropvalue<- c(1,2,3,4,5,6,10,11,12,13,14,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,
+                 38,39,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,63,64,65,66,67,68,69,
+                70,71,72,74,75,76,77,81,82,83,87,88,92,111,112,121,122,123,124,131,141,142,143,152,176,190,195,204,205,206,
+               207,208,209,210,211,212,213,214,216,217,218,219,220,221,222,223,224,225,226,227,229,230,231,232,233,234,235,236,237,
+               238,239,240,241,242,243,244,245,246,2247,248,249,250,254)
+count(allcropvalue)
 
 #read in for parcel data
 Parcels_Accomack <- readRDS("/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/parceldata/Parcels_Accomack.RDS")
@@ -83,13 +84,8 @@ CDL_Crop_Parcel<- function(year, county, parcel){
   buffer<-st_buffer(nodata, dist = 15, endCapStyle = "SQUARE")
   #print(buffer)--> works
   library(dplyr)
-  data("linkdata")
-  link<- left_join(buffer, linkdata, by = c('value' = 'MasterCat'))
-  #print(link)--> works
-  #transform CDL crs to parcel crs
-  transform<-st_transform(link, crs = st_crs(parcel))
+  transform<-st_transform(buffer, crs = st_crs(parcel))
   #print(transform)--> works
-  #for loop for crops, used value because it is a numeric vector and create the vector within the function
   distinct<-transform%>%distinct(value, .keep_all = TRUE)
   cropvalue<-distinct[['value']]
   for (i in cropvalue){
@@ -102,6 +98,7 @@ CDL_Crop_Parcel<- function(year, county, parcel){
     #merge crop geometry for each parcel
     merge<-intersect%>%group_by(PARCELID)%>%summarize(crop_geometry = st_union(geometry))%>%mutate(crop_area = st_area(crop_geometry))
     #print(merge)
+    #add crop value
     add_name<- merge%>%cbind(merge, i)%>%select(PARCELID, crop_area, crop_geometry, i)
     #print(add_name)
     #add parcel area column
@@ -112,20 +109,21 @@ CDL_Crop_Parcel<- function(year, county, parcel){
     percent<-add_area_locality%>%mutate(perc_area_crop=(crop_area/parcel_area)*100)
     #print(percent)
     #link crop names
+    data("linkdata")
     linkcrop<- linkdata%>%rename(i = MasterCat)
-    final<- left_join(percent, linkcrop, by = ("i"))
-    print(final)
+    list<- left_join(percent, linkcrop, by = ("i"))
+    list<- as.data.frame(list)
   }
 }
 
 #################################################################################
 
-Northampton_2021<- CDL_Crop_Parcel(year=2021, county=51131, parcel = Parcels_Northampton)
-CDL_Crop_Parcel(year=2021, county=51001, parcel = Parcels_Accomack)
+CDL_Crop_Parcel_trial(year=2021, county=51131, parcel = Parcels_Northampton)
+CDL_Crop_Parcel_trial(year=2021, county=51001, parcel = Parcels_Accomack)
 
 
 ################################################## experimental function #########################################
-CDL_Crop_Parcel_trial<- function(year, county, parcel){
+CDL_Crop_Parcel<- function(year, county, parcel){
   library(CropScapeR)
   aoi=county
   #importing CDL data for year and county
@@ -139,14 +137,10 @@ CDL_Crop_Parcel_trial<- function(year, county, parcel){
   buffer<-st_buffer(nodata, dist = 15, endCapStyle = "SQUARE")
   #print(buffer)--> works
   library(dplyr)
-  data("linkdata")
-  link<- left_join(buffer, linkdata, by = c('value' = 'MasterCat'))
-  #print(link)--> works
-  #transform CDL crs to parcel crs
-  transform<-st_transform(link, crs = st_crs(parcel))
+  transform<-st_transform(buffer, crs = st_crs(parcel))
   #print(transform)--> works
-  #for loop for crops, used value because it is a numeric vector and create the vector within the function
-  cropvalue<-transform[['value']]
+  distinct<-transform%>%distinct(value, .keep_all = TRUE)
+  cropvalue<-distinct[['value']]
   for (i in cropvalue){
     # print(i)--> links it to merge
     allcrops<- transform%>%filter(value == i)
@@ -157,6 +151,7 @@ CDL_Crop_Parcel_trial<- function(year, county, parcel){
     #merge crop geometry for each parcel
     merge<-intersect%>%group_by(PARCELID)%>%summarize(crop_geometry = st_union(geometry))%>%mutate(crop_area = st_area(crop_geometry))
     #print(merge)
+    #add crop value
     add_name<- merge%>%cbind(merge, i)%>%select(PARCELID, crop_area, crop_geometry, i)
     #print(add_name)
     #add parcel area column
@@ -167,12 +162,14 @@ CDL_Crop_Parcel_trial<- function(year, county, parcel){
     percent<-add_area_locality%>%mutate(perc_area_crop=(crop_area/parcel_area)*100)
     #print(percent)
     #link crop names
+    data("linkdata")
     linkcrop<- linkdata%>%rename(i = MasterCat)
-    final<- left_join(percent, linkcrop, by = ("i"))
-    return(final)
+    list<- left_join(percent, linkcrop, by = ("i"))
+    list<- as.data.frame(list)
   }
 }
 
+
 #################################################################################
 
-CDL_Crop_Parcel_trial(year=2021, county=51131, parcel = Parcels_Northampton)
+CDL_Crop_Parcel(year=2021, county=51131, parcel = Parcels_Northampton)
