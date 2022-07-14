@@ -17,7 +17,7 @@ library(RColorBrewer)
 
 #the steps that I did to do this with corn for one year
 
-### FUCTION ONE ###
+### FUCTION - general idea ###
 
 #code to do each subfunction
 #1: call in cdl data
@@ -45,24 +45,13 @@ library(RColorBrewer)
 #11: create percent area crop cover column
   #merge_corn_northampton<-merge_corn_northampton%>%mutate(perc_area_corn=(corn_parcel_area/parcel_area)*100)
 
-(
-  cdl_sf_Northampton <- GetCDLData(aoi = 51131, year = 2021, type = "f", format = "sf")
-)
-
-
-sort( table(cdl_sf_Northampton$value) )
-
-
-
 ################################## SEE WHAT CROPS I WILL USE##############################
 data("linkdata")
-
-allcropvalue<- c(1,2,3,4,5,6,10,11,12,13,14,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,
-                 38,39,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,63,64,65,66,67,68,69,
-                70,71,72,74,75,76,77,81,82,83,87,88,92,111,112,121,122,123,124,131,141,142,143,152,176,190,195,204,205,206,
-               207,208,209,210,211,212,213,214,216,217,218,219,220,221,222,223,224,225,226,227,229,230,231,232,233,234,235,236,237,
-               238,239,240,241,242,243,244,245,246,2247,248,249,250,254)
-count(allcropvalue)
+#allcropvalue<- c(1,2,3,4,5,6,10,11,12,13,14,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,
+           ##      38,39,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,63,64,65,66,67,68,69,
+          ##      70,71,72,74,75,76,77,81,82,83,87,88,92,111,112,121,122,123,124,131,141,142,143,152,176,190,195,204,205,206,
+          ##     207,208,209,210,211,212,213,214,216,217,218,219,220,221,222,223,224,225,226,227,229,230,231,232,233,234,235,236,237,
+        ##       238,239,240,241,242,243,244,245,246,2247,248,249,250,254)
 
 #read in for parcel data
 Parcels_Accomack <- readRDS("/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/parceldata/Parcels_Accomack.RDS")
@@ -75,101 +64,140 @@ CDL_Crop_Parcel<- function(year, county, parcel){
   aoi=county
   #importing CDL data for year and county
   cdl_info<- GetCDLData(aoi = county, year = year, type = "f", format = "sf")
-  #print(cdl_info)--> works
   #deleting no data rows
   nodata<- cdl_info[!(cdl_info$value == "0"), ]
-  #print(nodata)--> works
   #create tiles (30m resolution)
   library(sf)
   buffer<-st_buffer(nodata, dist = 15, endCapStyle = "SQUARE")
-  #print(buffer)--> works
   library(dplyr)
-  transform<-st_transform(buffer, crs = st_crs(parcel))
-  #print(transform)--> works
+  data("linkdata")
+  link<- left_join(buffer, linkdata, by = c('value' = 'MasterCat'))
+  #transform CDL crs to parcel crs
+  transform<-st_transform(link, crs = st_crs(parcel))
+  #for loop for crops, used value because it is a numeric vector and create the vector within the function
   distinct<-transform%>%distinct(value, .keep_all = TRUE)
   cropvalue<-distinct[['value']]
+  #bind all dataframes from loops
+  datalist=list()
   for (i in cropvalue){
-    # print(i)--> links it to merge
     allcrops<- transform%>%filter(value == i)
-    #print(allcrops) --> works
     #intersect crop and parcels
     intersect<-st_intersection(allcrops, st_make_valid(parcel))
-    #print(intersect) --> works
     #merge crop geometry for each parcel
     merge<-intersect%>%group_by(PARCELID)%>%summarize(crop_geometry = st_union(geometry))%>%mutate(crop_area = st_area(crop_geometry))
-    #print(merge)
-    #add crop value
+    #add crop values
     add_name<- merge%>%cbind(merge, i)%>%select(PARCELID, crop_area, crop_geometry, i)
-    #print(add_name)
     #add parcel area column
     parcel_area<-st_set_geometry(parcel, NULL)
     add_area_locality<- left_join(add_name, parcel_area)
-    #print(add_area_locality) --> works
     #create percent area crop cover column
     percent<-add_area_locality%>%mutate(perc_area_crop=(crop_area/parcel_area)*100)
-    #print(percent)
     #link crop names
-    data("linkdata")
     linkcrop<- linkdata%>%rename(i = MasterCat)
-    list<- left_join(percent, linkcrop, by = ("i"))
-    list<- as.data.frame(list)
+    final<- left_join(percent, linkcrop, by = ("i"))
+    #save as dataframe
+    final01<- st_set_geometry(final, NULL)
+    final02<-as.data.frame(final01)
+    datalist[[i]]<- final02
   }
+  #bound all df
+  bindall<- do.call(rbind, datalist)
+  return(bindall)
 }
 
 #################################################################################
+#
+Northampton2021<- CDL_Crop_Parcel(year=2021, county=51131, parcel = Parcels_Northampton)
+saveRDS(Northampton2021, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/CropArea/Northampton2021.RDS")
+write.csv(Northampton2021, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/CropArea/Northampton2021.csv")
+#
+Northampton2020<- CDL_Crop_Parcel(year=2020, county=51131, parcel = Parcels_Northampton)
+saveRDS(Northampton2020, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/CropArea/Northampton2020.RDS")
+#
+Northampton2019<- CDL_Crop_Parcel(year=2019, county=51131, parcel = Parcels_Northampton)
+saveRDS(Northampton2019, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/CropArea/Northampton2019.RDS")
+#
+Northampton2018<- CDL_Crop_Parcel(year=2018, county=51131, parcel = Parcels_Northampton)
+saveRDS(Northampton2018, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/CropArea/Northampton2018.RDS")
+#
+Northampton2017<- CDL_Crop_Parcel(year=2017, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2016<- CDL_Crop_Parcel(year=2016, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2015<- CDL_Crop_Parcel(year=2015, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2014<- CDL_Crop_Parcel(year=2014, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2013<- CDL_Crop_Parcel(year=2013, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2012<- CDL_Crop_Parcel(year=2012, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2011<- CDL_Crop_Parcel(year=2011, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2010<- CDL_Crop_Parcel(year=2010, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2009<- CDL_Crop_Parcel(year=2009, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2008<- CDL_Crop_Parcel(year=2008, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2007<- CDL_Crop_Parcel(year=2007, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2006<- CDL_Crop_Parcel(year=2006, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2005<- CDL_Crop_Parcel(year=2005, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2004<- CDL_Crop_Parcel(year=2004, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2003<- CDL_Crop_Parcel(year=2003, county=51131, parcel = Parcels_Northampton)
+#
+Northampton2002<- CDL_Crop_Parcel(year=2002, county=51131, parcel = Parcels_Northampton)
 
-CDL_Crop_Parcel_trial(year=2021, county=51131, parcel = Parcels_Northampton)
-CDL_Crop_Parcel_trial(year=2021, county=51001, parcel = Parcels_Accomack)
 
-
-################################################## experimental function #########################################
-CDL_Crop_Parcel<- function(year, county, parcel){
-  library(CropScapeR)
-  aoi=county
-  #importing CDL data for year and county
-  cdl_info<- GetCDLData(aoi = county, year = year, type = "f", format = "sf")
-  #print(cdl_info)--> works
-  #deleting no data rows
-  nodata<- cdl_info[!(cdl_info$value == "0"), ]
-  #print(nodata)--> works
-  #create tiles (30m resolution)
-  library(sf)
-  buffer<-st_buffer(nodata, dist = 15, endCapStyle = "SQUARE")
-  #print(buffer)--> works
-  library(dplyr)
-  transform<-st_transform(buffer, crs = st_crs(parcel))
-  #print(transform)--> works
-  distinct<-transform%>%distinct(value, .keep_all = TRUE)
-  cropvalue<-distinct[['value']]
-  for (i in cropvalue){
-    # print(i)--> links it to merge
-    allcrops<- transform%>%filter(value == i)
-    #print(allcrops) --> works
-    #intersect crop and parcels
-    intersect<-st_intersection(allcrops, st_make_valid(parcel))
-    #print(intersect) --> works
-    #merge crop geometry for each parcel
-    merge<-intersect%>%group_by(PARCELID)%>%summarize(crop_geometry = st_union(geometry))%>%mutate(crop_area = st_area(crop_geometry))
-    #print(merge)
-    #add crop value
-    add_name<- merge%>%cbind(merge, i)%>%select(PARCELID, crop_area, crop_geometry, i)
-    #print(add_name)
-    #add parcel area column
-    parcel_area<-st_set_geometry(parcel, NULL)
-    add_area_locality<- left_join(add_name, parcel_area)
-    #print(add_area_locality) --> works
-    #create percent area crop cover column
-    percent<-add_area_locality%>%mutate(perc_area_crop=(crop_area/parcel_area)*100)
-    #print(percent)
-    #link crop names
-    data("linkdata")
-    linkcrop<- linkdata%>%rename(i = MasterCat)
-    list<- left_join(percent, linkcrop, by = ("i"))
-    list<- as.data.frame(list)
-  }
-}
 
 
 #################################################################################
+#
+Accomack2021<- CDL_Crop_Parcel_trial(year=2021, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2020<- CDL_Crop_Parcel(year=2020, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2019<- CDL_Crop_Parcel(year=2019, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2018<- CDL_Crop_Parcel(year=2018, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2017<- CDL_Crop_Parcel(year=2017, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2016<- CDL_Crop_Parcel(year=2016, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2015<- CDL_Crop_Parcel(year=2015, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2014<- CDL_Crop_Parcel(year=2014, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2013<- CDL_Crop_Parcel(year=2013, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2012<- CDL_Crop_Parcel(year=2012, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2011<- CDL_Crop_Parcel(year=2011, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2010<- CDL_Crop_Parcel(year=2010, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2009<- CDL_Crop_Parcel(year=2009, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2008<- CDL_Crop_Parcel(year=2008, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2007<- CDL_Crop_Parcel(year=2007, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2006<- CDL_Crop_Parcel(year=2006, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2005<- CDL_Crop_Parcel(year=2005, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2004<- CDL_Crop_Parcel(year=2004, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2003<- CDL_Crop_Parcel(year=2003, county=51001, parcel = Parcels_Accomack)
+#
+Accomack2002<- CDL_Crop_Parcel(year=2002, county=51001, parcel = Parcels_Accomack)
 
-CDL_Crop_Parcel(year=2021, county=51131, parcel = Parcels_Northampton)
+
+
+
+
