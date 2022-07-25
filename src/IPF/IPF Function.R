@@ -98,24 +98,69 @@ IPF <- function(County, geoid){
 ########################################################################
 
 Northampton930100 <- IPF(County = "Northampton", geoid = "51131930100")
+saveRDS(Northampton930100, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Northampton930100.RDS")
+
 Northampton930200 <- IPF(County = "Northampton", geoid = "51131930200")
+saveRDS(Northampton930200, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Northampton930200.RDS")
+
 Northampton930302 <- IPF(County = "Northampton", geoid = "51131930302")
+saveRDS(Northampton930302, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Northampton930302.RDS")
+
 Northampton930301 <- IPF(County = "Northampton", geoid = "51131930301")
-Northampton990100 <- IPF(County = "Northampton", geoid = "51131990100")
+saveRDS(Northampton930301, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Northampton930301.RDS")
+
+Northampton990100 <- IPF(County = "Northampton", geoid = "51131990100") #NOT WORKING
+saveRDS(Northampton990100, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Northampton990100.RDS")
 
 ########################################################################
 Accomack090300 <- IPF(County = "Accomack", geoid = "51001090300")
+saveRDS(Accomack090300, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090300.RDS")
+
 Accomack090800 <- IPF(County = "Accomack", geoid = "51001090800")
-Accomack990200 <- IPF(County = "Accomack", geoid = "51001990200")
-Accomack090600 <- IPF(County = "Accomack", geoid = "51001090600")
-Accomack990100 <- IPF(County = "Accomack", geoid = "51001990100")
+saveRDS(Accomack090800, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090800.RDS")
+
+Accomack990200 <- IPF(County = "Accomack", geoid = "51001990200") #NOT WORKING
+saveRDS(Accomack990200, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack990200.RDS")
+
+Accomack090600 <- IPF(County = "Accomack", geoid = "51001090600") 
+saveRDS(Accomack090600, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090600.RDS")
+
+Accomack990100 <- IPF(County = "Accomack", geoid = "51001990100") #NOT WORKING
+saveRDS(Accomack090600, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090600.RDS")
+
 Accomack090500 <- IPF(County = "Accomack", geoid = "51001090500")
+saveRDS(Accomack090500, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090500.RDS")
+
 Accomack090700 <- IPF(County = "Accomack", geoid = "51001090700")
-Accomack980200 <- IPF(County = "Accomack", geoid = "51001980200")
-Accomack980100 <- IPF(County = "Accomack", geoid = "51001980100")
+saveRDS(Accomack090700, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090700.RDS")
+
+Accomack980200 <- IPF(County = "Accomack", geoid = "51001980200") #NOT WORKING
+saveRDS(Accomack980200, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack980200.RDS")
+
+Accomack980100 <- IPF(County = "Accomack", geoid = "51001980100") #NOT WOKRING (1)
+saveRDS(Accomack980100, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack980100.RDS")
+
 Accomack090202 <- IPF(County = "Accomack", geoid = "51001090202")
+saveRDS(Accomack090202, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090202.RDS")
+
 Accomack090402 <- IPF(County = "Accomack", geoid = "51001090402")
+saveRDS(Accomack090402, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090402.RDS")
+
 Accomack090401 <- IPF(County = "Accomack", geoid = "51001090401")
+saveRDS(Accomack090401, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090401.RDS")
+
 Accomack090201 <- IPF(County = "Accomack", geoid = "51001090201")
+saveRDS(Accomack090201, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090201.RDS")
+
 Accomack090102 <- IPF(County = "Accomack", geoid = "51001090102")
+saveRDS(Accomack090102, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090102.RDS")
+
 Accomack090101 <- IPF(County = "Accomack", geoid = "51001090101")
+saveRDS(Accomack090102, file = "/project/biocomplexity/sdad/projects_data/coastal_futures/dspg2022/IPFoutput/Accomack090102.RDS")
+
+# FIX #
+#Accomack980100 has 1 observation
+#Accomack980200 has 0 observations
+#Accomack990100 has 0 observations
+#Accomack990200 has 0 observations
+#Northampton990100 has 0 observations
