@@ -1,4 +1,4 @@
-############################# creating a function that can link CDL data to Parcel data######################################
+############################# creating a function that can link CDL data to Parcel data ######################################
 library(tidyUSDA)
 library(sf)
 library(dplyr)
